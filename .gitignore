@@ -23,6 +23,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+.cursor/rules
 
 # Custom - Cache directory
 /public/cache
