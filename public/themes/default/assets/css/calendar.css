@@ -1,0 +1,72 @@
+.calendar-header {
+	width: 100%;
+	padding: 1rem;
+	font-size: 1.5rem;
+	text-align: center;
+}
+
+.calendar-column {
+	-ms-flex-preferred-size: 0;
+	flex-basis: 0;
+	-webkit-box-flex: 1;
+	-ms-flex-positive: 1;
+	flex-grow: 1;
+	-ms-flex-negative: 1;
+	flex-shrink: 1;
+	display: block;
+	position: relative;
+	background-color: #ffffff;
+	flex: 0 0 14.28%;
+	padding: 1.5rem;
+	font-size: .8rem;
+	border: 1px solid #eeeeee;
+}
+
+.day-indicator {
+	position: absolute;
+	top: .25rem;
+	right: .25rem;
+	width: 24px;
+	height: 24px;
+	line-height: 22px;
+	text-align: center;
+	color: #bbb;
+	border: 1px solid transparent;
+	border-radius: 50%;
+	transition: .2s linear;
+}
+
+.event-list {
+	margin: auto;
+}
+
+.is-current-month .day-indicator {
+	color: #000000;
+}
+
+.day-indicator.today {
+	border-color: #aaaaaa;
+}
+
+.is-current-month:hover .day-indicator.today {
+	border-color: #eee;
+}
+
+.is-current-month:hover .day-indicator {
+	background-color: #eee;
+}
+
+.calendar-column.is-header {
+	background-color: transparent;
+	padding: .5rem;
+	text-align: right;
+	border: none;
+}
+
+.calendar-column.is-current-month {
+	height: 11rem;
+}
+
+.calendar-control {
+	margin: 0 .5rem;
+}

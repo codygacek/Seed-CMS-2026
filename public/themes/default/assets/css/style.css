@@ -1,0 +1,284 @@
+@import url('calendar.css');
+
+html {
+	overflow-x: hidden;
+}
+
+body {
+	background-color: #eaeaea;
+}
+
+.fluid-container {
+	max-width: 1200px;
+}
+
+.alignleft {
+	float: left;
+	margin: 2rem 2rem 2rem 0;
+}
+
+.alignright {
+	float: right;
+	margin: 2rem 0 2rem 2rem;
+}
+
+.aligncenter {
+	display: block;
+	margin: 0 auto;
+}
+
+a {
+	color: #000000;
+}
+
+.section {
+	background-color: #ffffff;
+}
+
+.nav-item {
+	position: relative;
+	display: inline-block;
+}
+
+.two-columns {
+    column-count: 2;
+}
+.three-columns {
+    column-count: 3;
+}
+
+/* ==========================================================================
+   Main Navigation
+   ========================================================================== */
+
+.menu-toggle {
+	display: none;
+}
+
+.main-menu {
+	padding: 0;
+}
+
+.main-menu .nav-item-link {
+	display: block;
+	padding: .5rem .75rem;
+	color: #444444;
+	text-decoration: none;
+	transition: .2s linear;
+}
+
+.main-menu .nav-item-link:hover,
+.main-menu .nav-item:hover {
+	background-color: #fafafa;
+}
+
+.main-menu .nav-item-link:hover {
+	color: #444444;
+}
+
+.sub-menu {
+	opacity: 0;
+	visibility: hidden;
+	background-color: #fff;
+	position: absolute;
+	left: 0;
+	width: 15rem;
+	padding: 0;
+	box-shadow: 0 5px 5px rgba(0,0,0,0.15);
+	transform: translateY(2px);
+	z-index: 10;
+	transition: .25s cubic-bezier(.09,.66,.43,.87);
+}
+
+.nav-item:hover .sub-menu {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0);
+}
+
+.sub-menu .nav-item {
+	display: block;
+}
+
+.sub-menu .nav-item-link:hover {
+	background: #fafafa;
+}
+
+.footer-copyright {
+	font-size: .8rem;
+}
+
+.feed-item {
+	padding: .75rem 0;
+	border-bottom: 1px solid #eeeeee;
+}
+
+.swiper-container {
+	margin-bottom: 1.5rem;
+}
+
+.swiper-wrapper {
+	margin-bottom: 25px;
+}
+
+.swiper-slide img {
+	width: 100%;
+	display: block;
+}
+
+.swiper-container-horizontal > .swiper-pagination-bullets {
+	bottom: 0;
+}
+
+.swiper-pagination-bullet {
+	width: 12px;
+	height: 12px;
+}
+
+.swiper-pagination-bullet-active {
+	background: #000000;
+}
+
+/* ==========================================================================
+   Member Listing Pages
+   ========================================================================== */
+
+.member-card {
+	position: relative;
+}
+	
+.member-info-overlay {
+	opacity: 0;
+	visibility: hidden;
+	background-color: rgba(0,0,0,0.25);
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	padding: .5rem;
+	overflow-y: scroll;
+	transition: .2s linear;
+}
+
+.member-card:hover .member-info-overlay {
+	opacity: 1;
+	visibility: visible;
+}
+
+.member-info {
+	color: #fff;
+	transform: translateY(10px);
+	transition: .2s linear;
+}
+
+.member-card:hover .member-info {
+	transform: translateY(0);
+}
+
+.member-name {
+	font-size: 1.5rem;
+	font-weight: normal;
+	border-bottom: 1px solid #fff;
+}
+
+@media screen and (max-width: 767px) {
+	/* ==========================================================================
+   Main Menu
+   ========================================================================== */
+
+   .menu-toggle {
+   		background-color: rgba(255,255,255,0.9);
+		display: block;
+		position: fixed;
+		top: 5px;
+		right: 5px;
+		width: 40px;
+		height: 40px;
+		line-height: 40px;
+		text-align: center;
+		color: #444444;
+		font-size: 1.5rem;
+		z-index: 20;
+	}
+
+	.site-navigation {
+		opacity: 0;
+		visibility: hidden;
+		display: flex;
+		background-color: rgba(0,0,0,0.95);
+		position: fixed;
+		top: 0;
+		right: 0;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+		height: 100%;
+		overflow-y: scroll;
+		transition: .2s linear;
+		z-index: 10;
+	}
+
+	.menu-open .site-navigation {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.site-navigation .nav-item {
+		display: block;
+		text-align: center;
+	}
+
+	.main-menu .nav-item-link,
+	.main-menu .nav-item {
+		color: #dddddd;
+	}
+
+	.main-menu > .nav-item > .nav-item-link
+	{
+		font-size: 1.2rem;
+		text-transform: uppercase;
+	}
+
+	.main-menu .nav-item-link:hover,
+	.main-menu .nav-item:hover {
+		background-color: transparent;
+		color: #ffffff;
+	}
+
+	.site-navigation .sub-menu {
+		background-color: transparent;
+		opacity: 1;
+		visibility: visible;
+		max-height: 0;
+		position: static;
+		width: 100%;
+		transform: none;
+		box-shadow: none;
+		overflow-y: hidden;
+		transition: .5s linear;
+	}
+
+	.site-navigation .sub-menu.is-open {
+		background-color: #1a1a1a;
+		max-height: 500px;
+	}
+
+	.site-navigation .sub-menu .nav-item-link {
+		padding: .5rem 1rem;
+		color: #bbbbbb;
+	}
+
+	.site-navigation .sub-menu .nav-item-link:hover {
+		color: #ffffff;
+	}
+}
+
+@media screen and (max-width: 480px) {
+	.two-columns {
+	    column-count: 1;
+	}
+	.three-columns {
+	    column-count: 1;
+	}
+}
