@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NavMenus\Tables;
 
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,6 +19,7 @@ class NavMenusTable
                 TextColumn::make('title')
                     ->searchable(),
                 TextColumn::make('slug')
+                    ->label('Identifier')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -32,13 +34,17 @@ class NavMenusTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultPaginationPageOption(25)
+            ->striped();
     }
 }

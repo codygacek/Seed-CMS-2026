@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\WidgetContainers\Tables;
 
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -17,6 +19,7 @@ class WidgetContainersTable
                 TextColumn::make('title')
                     ->searchable(),
                 TextColumn::make('slug')
+                    ->label('Identifier')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -31,12 +34,17 @@ class WidgetContainersTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultPaginationPageOption(25)
+            ->striped();
     }
 }

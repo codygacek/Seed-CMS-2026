@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PageResource\Tables;
 
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -9,6 +10,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns;
 use Filament\Tables\Filters;
 use Filament\Tables\Table;
+use Filament\Tables\Enums\PaginationMode;
 
 class PagesTable
 {
@@ -29,7 +31,7 @@ class PagesTable
                     ->label('Protected')
                     ->boolean()
                     ->getStateUsing(fn ($record) => $record->token !== null)
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
 
                 Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -37,9 +39,9 @@ class PagesTable
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->date('M j, Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(),
             ])
             ->filters([
                 Filters\SelectFilter::make('layout')
@@ -53,14 +55,18 @@ class PagesTable
                     ),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultPaginationPageOption(25)
+            ->striped();
     }
 
     protected static function getLayoutOptions(): array

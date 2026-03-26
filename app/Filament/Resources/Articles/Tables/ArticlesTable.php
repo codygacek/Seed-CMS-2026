@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Articles\Tables;
 
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\DeleteAction;
@@ -22,7 +23,7 @@ class ArticlesTable
                 IconColumn::make('is_published')
                     ->boolean(),
                 TextColumn::make('published_at')
-                    ->dateTime()
+                    ->date('M j, Y')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -37,8 +38,10 @@ class ArticlesTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -47,6 +50,8 @@ class ArticlesTable
             ])
             ->defaultSort(fn ($query) =>
                 $query->orderByRaw('COALESCE(published_at, created_at) DESC')
-            );
+            )
+            ->defaultPaginationPageOption(25)
+            ->striped();
     }
 }

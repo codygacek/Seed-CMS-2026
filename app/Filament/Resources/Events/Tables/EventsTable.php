@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Events\Tables;
 
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -23,10 +24,10 @@ class EventsTable
                     ->boolean()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('starts_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y ')
                     ->sortable(),
                 TextColumn::make('ends_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y - g:m a')
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -41,13 +42,17 @@ class EventsTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                ActionGroup::make([
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultPaginationPageOption(25)
+            ->striped();
     }
 }

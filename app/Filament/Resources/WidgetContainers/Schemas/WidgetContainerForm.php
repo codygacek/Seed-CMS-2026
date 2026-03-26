@@ -39,7 +39,8 @@ class WidgetContainerForm
 
                                 TextInput::make('slug')
                                     ->required()
-                                    ->maxLength(191),
+                                    ->maxLength(191)
+                                    ->helperText('Unique identifier for this widget container'),
                             ]),
 
                         Tab::make('Options')
@@ -125,6 +126,31 @@ class WidgetContainerForm
                                                 'widget_container_id' => $container->id,
                                                 'title' => 'Text Widget',
                                                 'type' => 'text',
+                                                'options' => [
+                                                    'content' => '',
+                                                ],
+                                                'position' => $maxPosition + 1,
+                                            ]);
+
+                                            $livewire->record->refresh();
+
+                                            $livewire->form->fill($livewire->record->attributesToArray());
+
+                                            $livewire->dispatch('$refresh');
+                                        }),
+
+                                    Action::make('add_social_media_widget')
+                                        ->label('Add Social Media Widget')
+                                        ->icon('heroicon-o-signal')
+                                        ->color('gray')
+                                        ->action(function ($livewire) {
+                                            $container = $livewire->getRecord();
+                                            $maxPosition = (int) $container->widgets()->max('position');
+
+                                            Widget::create([
+                                                'widget_container_id' => $container->id,
+                                                'title' => 'Social Media Widget',
+                                                'type' => 'social-media',
                                                 'options' => [
                                                     'content' => '',
                                                 ],
