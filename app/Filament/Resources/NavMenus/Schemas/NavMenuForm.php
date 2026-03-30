@@ -201,7 +201,7 @@ class NavMenuForm
                                                     }
 
                                                     $label = trim((string) $get('custom_label'));
-                                                    $link  = trim((string) $schemaGet('custom_link'));
+                                                    $link  = trim((string) $get('custom_link'));
 
                                                     if ($label === '' || $link === '') {
                                                         return;
