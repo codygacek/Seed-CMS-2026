@@ -62,6 +62,7 @@ class ArticleForm
                                 ->label('Publish date')
                                 ->helperText('Controls article ordering and scheduling')
                                 ->nullable()
+                                ->native(false)
                                 ->default(now()),
                         ]),
 
