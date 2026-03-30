@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Articles\Schemas;
 
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
-use App\Support\RichEditorHelper;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Select;
@@ -71,7 +70,7 @@ class ArticleForm
 
                     Tab::make('Content')
                         ->schema([
-                            RichEditorHelper::make('content')
+                            RichEditor::make('content')
                                 ->required()
                                 ->columnSpanFull(),
                         ]),
