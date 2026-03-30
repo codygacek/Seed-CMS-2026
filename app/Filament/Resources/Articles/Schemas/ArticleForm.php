@@ -63,7 +63,9 @@ class ArticleForm
                                 ->helperText('Controls article ordering and scheduling')
                                 ->nullable()
                                 ->native(false)
-                                ->default(now()),
+                                ->format('M j, Y g:m')
+                                ->default(now())
+                                ->seconds(false)
                         ]),
 
                     Tab::make('Featured Image')

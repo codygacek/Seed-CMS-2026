@@ -23,6 +23,7 @@ class ArticlesTable
                 IconColumn::make('is_published')
                     ->boolean(),
                 TextColumn::make('published_at')
+                    ->label('Publish date')
                     ->date('M j, Y')
                     ->sortable(),
                 TextColumn::make('created_at')
