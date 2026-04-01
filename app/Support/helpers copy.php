@@ -28,22 +28,24 @@ if (! function_exists('resize')) {
         $imagePath = urldecode(trim($imagePath));
 
         $defaults = [
-            'crop'               => false,
-            'scale'              => false,
-            'thumbnail'          => false,
-            'maxOnly'            => false,
-            'canvas-color'       => 'transparent',
-            'output-filename'    => false,
-            'quality'            => 90,
+            'crop' => false,
+            'scale' => false,
+            'thumbnail' => false,
+            'maxOnly' => false,
+            'canvas-color' => 'transparent',
+            'output-filename' => false,
+            'quality' => 90,
             'cache_http_minutes' => 20,
-            'cacheFolder'        => public_path('cache') . DIRECTORY_SEPARATOR,
-            'remoteFolder'       => public_path('cache/remote') . DIRECTORY_SEPARATOR,
+            'cacheFolder' => public_path('cache') . DIRECTORY_SEPARATOR,
+            'remoteFolder' => public_path('cache/remote') . DIRECTORY_SEPARATOR,
         ];
 
         $opts = array_merge($defaults, $opts ?? []);
 
         File::ensureDirectoryExists($opts['cacheFolder']);
         File::ensureDirectoryExists($opts['remoteFolder']);
+
+        $pathToConvert = env('PATH_TO_CONVERT', '/usr/bin/convert');
 
         $toPublicUrl = function (string $localPath): string {
             $relative = str_replace(public_path(), '', $localPath);
@@ -54,7 +56,7 @@ if (! function_exists('resize')) {
         // ---- 1) Remote image support (http/https) ----
         $purl = parse_url($imagePath);
         if (! empty($purl['scheme']) && in_array($purl['scheme'], ['http', 'https'], true)) {
-            $basename      = basename(parse_url($imagePath, PHP_URL_PATH) ?: 'remote');
+            $basename = basename(parse_url($imagePath, PHP_URL_PATH) ?: 'remote');
             $localFilepath = $opts['remoteFolder'] . $basename;
 
             $download = true;
@@ -75,63 +77,84 @@ if (! function_exists('resize')) {
 
             $imagePath = $localFilepath;
         } else {
+            // Strip any accidental domain that was passed in (rare but happens)
             $imagePath = preg_replace('#^https?://[^/]+#', '', $imagePath) ?? $imagePath;
         }
 
         // ---- 2) Normalize common legacy/public formats ----
+        // Accept:
+        //  - "/storage/media/foo.jpg"
+        //  - "storage/media/foo.jpg"
+        //  - "media/foo.jpg"
+        //  - "foo.jpg" (legacy media_assets.file)
+        //  - absolute paths like "/Users/.../public/storage/media/foo.jpg"
         $normalized = trim($imagePath);
 
+        // If absolute path already under public/, use it as-is
         if (str_starts_with($normalized, public_path())) {
             $localPath = $normalized;
         } else {
-            $normalized = '/' . ltrim($normalized, '/');
+            $normalized = '/' . ltrim($normalized, '/'); // ensure leading slash for comparisons
 
             if (str_starts_with($normalized, '/storage/')) {
-                $localPath = public_path(ltrim($normalized, '/'));
+                // public URL -> local path
+                $localPath = public_path(ltrim($normalized, '/')); // "storage/..."
             } elseif (str_starts_with($normalized, '/media/')) {
-                $localPath = public_path('storage' . $normalized);
+                // old/new "media/..." style, treat as public disk under /storage
+                $localPath = public_path('storage' . $normalized); // "storage/media/..."
             } elseif ($normalized === '/' . basename($normalized)) {
+                // It's just "file.jpg" (no slashes) -> old CMS media folder
                 $localPath = public_path('storage/media/' . ltrim($normalized, '/'));
             } else {
+                // Generic relative path -> try under public/ first
                 $localPath = public_path(ltrim($normalized, '/'));
             }
         }
 
-        // ---- 3) If still missing, try smart remaps ----
+        // ---- 3) If still missing, try smart remaps (public/storage + old "/media" dir) ----
         if (! File::exists($localPath)) {
+            // If they passed "media/foo.jpg" without /storage, try storage
             $tryStorage = public_path('storage/' . ltrim($imagePath, '/'));
             if (File::exists($tryStorage)) {
                 $localPath = $tryStorage;
             } else {
+                // If someone used public_path().'/media/foo.jpg' historically
+                // try mapping it to public/storage/media/foo.jpg
                 $relativeFromPublic = ltrim(str_replace(public_path(), '', $localPath), '/');
-                $tryStorage2        = public_path('storage/' . $relativeFromPublic);
+                $tryStorage2 = public_path('storage/' . $relativeFromPublic);
                 if (File::exists($tryStorage2)) {
                     $localPath = $tryStorage2;
                 } else {
+                    // Final fallback: return the original *public URL* form,
+                    // but NEVER return a URL containing a filesystem path.
                     if (str_starts_with($imagePath, public_path())) {
                         return $toPublicUrl($imagePath);
                     }
 
                     $publicish = '/' . ltrim($imagePath, '/');
 
+                    // If it looks like legacy "/storage/...", return it.
                     if (str_starts_with($publicish, '/storage/')) {
                         return url($publicish);
                     }
 
+                    // If it looks like "media/...", return "/storage/media/..."
                     if (str_starts_with($publicish, '/media/')) {
                         return url('/storage' . $publicish);
                     }
 
+                    // If it's just "file.jpg", assume legacy media folder
                     if ($publicish === '/' . basename($publicish)) {
                         return url('/storage/media/' . ltrim($publicish, '/'));
                     }
 
+                    // Otherwise return a sane absolute URL to that relative path
                     return url($publicish);
                 }
             }
         }
 
-        // ---- 4) If no size requested, return original ----
+        // ---- 4) If no size requested, return original (as public URL) ----
         $w = $opts['w'] ?? null;
         $h = $opts['h'] ?? null;
 
@@ -149,60 +172,72 @@ if (! function_exists('resize')) {
 
         if ($opts['output-filename'] !== false) {
             $newPath = (string) $opts['output-filename'];
-        } elseif (! empty($w) && ! empty($h)) {
-            $newPath = $opts['cacheFolder'] . $filenameHash
-                . '_w' . (int) $w
-                . '_h' . (int) $h
-                . ($opts['crop'] ? '_cp' : '')
-                . ($opts['scale'] ? '_sc' : '')
-                . '.' . $ext;
-        } elseif (! empty($w)) {
-            $newPath = $opts['cacheFolder'] . $filenameHash . '_w' . (int) $w . '.' . $ext;
         } else {
-            $newPath = $opts['cacheFolder'] . $filenameHash . '_h' . (int) $h . '.' . $ext;
+            if (! empty($w) && ! empty($h)) {
+                $newPath = $opts['cacheFolder']
+                    . $filenameHash
+                    . '_w' . (int) $w
+                    . '_h' . (int) $h
+                    . ($opts['crop'] ? '_cp' : '')
+                    . ($opts['scale'] ? '_sc' : '')
+                    . '.' . $ext;
+            } elseif (! empty($w)) {
+                $newPath = $opts['cacheFolder'] . $filenameHash . '_w' . (int) $w . '.' . $ext;
+            } else {
+                $newPath = $opts['cacheFolder'] . $filenameHash . '_h' . (int) $h . '.' . $ext;
+            }
         }
 
-        // ---- 6) Generate resized image if missing or stale ----
-        $shouldCreate = ! File::exists($newPath)
-            || File::lastModified($newPath) < File::lastModified($localPath);
+        // If convert isn't installed, just return original image URL
+        if (! File::exists($pathToConvert)) {
+            return $toPublicUrl($localPath);
+        }
+
+        // ---- 6) Generate resized cache image if needed ----
+        $shouldCreate = ! File::exists($newPath) || File::lastModified($newPath) < File::lastModified($localPath);
 
         if ($shouldCreate) {
-            try {
-                $manager = new \Intervention\Image\ImageManager(
-                    new \Intervention\Image\Drivers\Gd\Driver()
-                );
-                $image = $manager->read($localPath);
+            if (! empty($w) && ! empty($h)) {
+                [$width, $height] = getimagesize($localPath);
 
-                if (! empty($w) && ! empty($h)) {
-                    if ($opts['crop']) {
-                        // Crop to exact dimensions
-                        $image->cover((int) $w, (int) $h);
-                    } elseif ($opts['scale']) {
-                        // Fit within box, no padding
-                        $image->scaleDown((int) $w, (int) $h);
-                    } else {
-                        // Fit within box, pad to exact dimensions
-                        $image->contain((int) $w, (int) $h);
-                    }
-                } elseif (! empty($w)) {
-                    $opts['maxOnly']
-                        ? $image->scaleDown((int) $w)
-                        : $image->scale((int) $w);
-                } else {
-                    $opts['maxOnly']
-                        ? $image->scaleDown(null, (int) $h)
-                        : $image->scale(null, (int) $h);
+                $resize = ($width > $height) ? (string) $w : ('x' . (string) $h);
+                if ($opts['crop']) {
+                    $resize = ($width > $height) ? ('x' . (string) $h) : (string) $w;
                 }
 
-                $image->save($newPath, quality: (int) $opts['quality']);
+                if ($opts['scale']) {
+                    $cmd = $pathToConvert . ' ' . escapeshellarg($localPath)
+                        . ' -resize ' . escapeshellarg($resize)
+                        . ' -quality ' . escapeshellarg((string) $opts['quality'])
+                        . ' ' . escapeshellarg($newPath);
+                } else {
+                    $cmd = $pathToConvert . ' ' . escapeshellarg($localPath)
+                        . ' -resize ' . escapeshellarg($resize)
+                        . ' -size ' . escapeshellarg(((int) $w) . 'x' . ((int) $h))
+                        . ' xc:' . escapeshellarg((string) $opts['canvas-color'])
+                        . ' +swap -gravity center -composite'
+                        . ' -quality ' . escapeshellarg((string) $opts['quality'])
+                        . ' ' . escapeshellarg($newPath);
+                }
+            } else {
+                $thumb = (! empty($h) ? 'x' : '') . (int) $w;
 
-            } catch (\Throwable $e) {
-                \Log::warning('resize() failed: ' . $e->getMessage());
+                $cmd = $pathToConvert . ' ' . escapeshellarg($localPath)
+                    . ' -thumbnail ' . $thumb
+                    . ($opts['maxOnly'] ? '\>' : '')
+                    . ' -quality ' . escapeshellarg((string) $opts['quality'])
+                    . ' ' . escapeshellarg($newPath);
+            }
+
+            exec($cmd, $output, $code);
+
+            if ($code !== 0 || ! File::exists($newPath)) {
+                // If resizing fails, fall back to original
                 return $toPublicUrl($localPath);
             }
         }
 
-        // ---- 7) Return public URL to cached image ----
+        // Return public URL to cached resized image
         return $toPublicUrl($newPath);
     }
 }
